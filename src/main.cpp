@@ -14,14 +14,14 @@
 #include "executor.hpp"
 #include "builder.hpp"
 
-const std::string user_config_file = "tmake.txt";
+const std::string user_config_file = "tmake.tmake";
 const std::string system_config_file = "build/tmake.config";
 const std::string cache_file = "build/tmake.cache";
 
 static void print_usage() {
     std::cout << "Usage: tmake <command> [options]" << std::endl;
     std::cout << "Commands:" << std::endl;
-    std::cout << "  config [args...]  Parse tmake.txt and generate build/tmake.config" << std::endl;
+    std::cout << "  config [args...]  Parse tmake.tmake and generate build/tmake.config" << std::endl;
     std::cout << "  build             Read build/tmake.config and compile all targets" << std::endl;
 }
 

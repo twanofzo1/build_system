@@ -20,6 +20,17 @@ to build the project using the generated build files.
 ## tmake clean
 to clean the build files and the generated binaries.
 
+# Editor Extension
+tmake has a VS Code extension that provides syntax highlighting and autocomplete for `.tmake` files.
+
+## Installing the VS Code Extension
+requirements: VS Code, Node.js, npm
+
+run the install script from the project root:
+```bash
+./editors/vscode/install.sh
+```
+this will install dependencies, compile the extension, and symlink it into your VS Code extensions directory. restart VS Code or reload the window to activate the extension.
 
 # tmake lang
 tmake is the scripting language used to configure the build process in tmake.

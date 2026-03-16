@@ -17,6 +17,7 @@ var output_directory = "./bin"
 COMPILER("g++")
 VERSION("17")
 
+
 if "$1" == "release" {
     PROGRAM(program_name, files, release_flags, output_directory)
 } else {

@@ -1,0 +1,47 @@
+{
+  "name": "tmake-lang",
+  "displayName": "tmake Language Support",
+  "description": "Syntax highlighting and autocomplete for tmake build configuration files",
+  "version": "0.1.0",
+  "publisher": "tmake",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:tmake"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "tmake",
+        "aliases": [
+          "tmake",
+          "TMake"
+        ],
+        "extensions": [
+          ".tmake"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tmake",
+        "scopeName": "source.tmake",
+        "path": "./syntaxes/tmake.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,2 +1,9 @@
 /bin
 /build
+
+editors/vscode/tmake-lang/node_modules/
+editors/vscode/tmake-lang/out/
+editors/vscode/tmake-lang/*.vsix
+
+.vscode/
+
