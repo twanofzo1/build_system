@@ -49,16 +49,9 @@ Ast_index Parser::parse_statement() {
         case Token_type::Identifier:
             result = parse_identifier_reference();
             break;
+        case Token_type::LBracket:
+            return parse_array_literal();
         case Token_type::LBrace:
-            // Distinguish array literal { val, val } from code block { stmt stmt }
-            // Arrays contain string literals or identifiers separated by commas
-            // Blocks contain statements like function calls, if statements, etc.
-            if (peek(1).type == Token_type::RBrace                          // empty: { }
-                || peek(2).type == Token_type::Comma                        // multi-element: { val, ...
-                || (peek(1).type == Token_type::String_literal && peek(2).type == Token_type::RBrace)   // single string: { "..." }
-                || (peek(1).type == Token_type::Identifier && peek(2).type == Token_type::RBrace)) {    // single ident: { name }
-                return parse_array_literal();
-            }
             return parse_block();
         case Token_type::Compiler:
         case Token_type::Program:
@@ -166,16 +159,16 @@ Ast_index Parser::parse_block() {
 
 
 Ast_index Parser::parse_array_literal() {
-    consume(Token_type::LBrace);
+    consume(Token_type::LBracket);
     Ast_array_literal arr;
 
-    while (peek().type != Token_type::RBrace) {
+    while (peek().type != Token_type::RBracket) {
         arr.elements.push_back(parse_statement());
         if (peek().type == Token_type::Comma) {
             consume(Token_type::Comma);
         }
     }
-    consume(Token_type::RBrace);
+    consume(Token_type::RBracket);
 
     m_ast.array_literals.push_back(arr);
     return {Ast_statement_type::Array_literal, static_cast<u32>(m_ast.array_literals.size() - 1)};

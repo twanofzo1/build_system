@@ -56,11 +56,14 @@ void Lexer::skip_comment() {
         }
     } else if (peek() == '*') {
         // Multi-line comment
-        m_pos += 2; // Skip the '/*'
-        while (m_pos < m_input.size() && !(m_input[m_pos] == '*' && peek() == '/')) {
-            m_pos++;
+        advance(2); // Skip the '/*'
+        while (m_pos < m_input.size()) {
+            if (m_current_char == '*' && peek() == '/') {
+                advance(2); // Skip the '*/'
+                return;
+            }
+            advance();
         }
-        m_pos += 2; // Skip the '*/'
     } else {
         std::cerr << "Error: Unexpected character after '/': " << peek() << std::endl;
         exit(1);
@@ -128,6 +131,14 @@ void Lexer::lex(){
             continue;
         case '}':
             tokens.push_back({Token_type::RBrace, "}"});
+            advance();
+            continue;
+        case '[':
+            tokens.push_back({Token_type::LBracket, "["});
+            advance();
+            continue;
+        case ']':
+            tokens.push_back({Token_type::RBracket, "]"});
             advance();
             continue;
         case ',':

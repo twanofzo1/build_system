@@ -5,7 +5,10 @@ SRC_DIR="src"
 CPP_FILES=$(find "$SRC_DIR" -type f -name '*.cpp')
 
 # Output executable name
-OUTPUT="main.out"
+if [ ! -d "bin" ]; then
+    mkdir bin
+fi
+OUTPUT="bin/tmake"
 
 # Compiler and flags
 CXX=g++

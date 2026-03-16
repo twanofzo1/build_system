@@ -18,6 +18,8 @@ enum class Token_type {
     RParen,
     LBrace,
     RBrace,
+    LBracket,
+    RBracket,
     Comma,
     Assign,
     Equal,
@@ -42,6 +44,8 @@ inline std::string token_type_to_string(Token_type type) {
         case Token_type::RParen: return "RParen";
         case Token_type::LBrace: return "LBrace";
         case Token_type::RBrace: return "RBrace";
+        case Token_type::LBracket: return "LBracket";
+        case Token_type::RBracket: return "RBracket";
         case Token_type::Comma: return "Comma";
         case Token_type::Assign: return "Assign";
         case Token_type::Equal: return "Equal";
