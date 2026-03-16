@@ -81,5 +81,5 @@ class Lexer {
 public:
     Lexer(const std::string& input);
     void lex();
-    const std::vector<Token>& get_tokens() const;
+    std::vector<Token>& get_tokens();
 };

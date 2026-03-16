@@ -1,4 +1,4 @@
-// twan_build configuration file
+// tmake configuration file
 // files: a list of source files to be compiled
 // debug_flags: a list of flags to be used when compiling in debug mode
 // release_flags: a list of flags to be used when compiling in release mode
@@ -13,28 +13,24 @@
 // "src/*.cpp"    can be used to include all cpp files in the src directory
 // "src/test.cpp" can be used to include a specific file
 var files = {
-    "src/file1.cpp",
-    "src/file2.cpp",
-    // ...
+    "src/**.cpp"
 }
 
 // List of flags for debug mode
 var debug_flags = {
-    "flag1",
-    "flag2",
-    // ...
+    "-Wall"
+    "Wextra"
 }
 
 // List of flags for release mode
 var release_flags = {
-    "flag1",
-    "flag2",
-    // ...
+    "-o3",
+    "test"
 }
 
 // The name of the output file and the output directory
-var program_name = "program"
-var output_directory = "/bin"
+var program_name = "tmake"
+var output_directory = "./bin"
 
 // Set the compiler to be used
 var compiler = "g++"
@@ -53,4 +49,8 @@ else if "$1" == "release" {
 }
 else {
     PRINT("Invalid build mode. Use 'debug' or 'release'.")
+}
+
+if "$1" == "test"{
+    PRINT("it works")
 }

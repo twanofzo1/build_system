@@ -1,10 +1,10 @@
-# twan_build Workflow
+# tmake Workflow
 
-## `twan_build init`
-- Generates a file named `twan_build.txt` with the following content:
+## `tmake init`
+- Generates a file named `tmake.txt` with the following content:
 
 ```js
-// twan_build configuration file
+// tmake configuration file
 // files: a list of source files to be compiled
 // debug_flags: a list of flags to be used when compiling in debug mode
 // release_flags: a list of flags to be used when compiling in release mode
@@ -67,29 +67,35 @@ else {
 
 ---
 
-## `twan_build clean`
+## `tmake clean`
 - Clears the build directory
 
 ---
 
-## `twan_build build ...`
-- Reads the `twan_build.txt` file
+## tmake
+
+## `tmake config ...`
+- Reads the `tmake.txt` file
+- Parses the configuration and checks for errors 
+- use the ... as replacement for the "$..." strings in the file
 - Gets the list of source files, flags, output directory and output name
-- Generates a file `twan_build.config` with the configuration
-- If the flags changed since the last build or the file is not found:
-    - Rebuilds all the source files
-- Generates a file `twan_build.cache` that stores includes and source files and their dependencies
-- Checks if the source files or their dependencies have changed since the last build:
-    - If yes, rebuilds the changed files
-    - Else, skips the unchanged files
+- Generates a file `tmake.config` with the configuration
+
+## `tmake build`
+- Reads the `tmake.config` file
+- check if the configuration is valid and if the source files exist
+- if the cache exists and the source files and dependencies have not changed since the last build, skip the compilation and display a message that the build is up to date
+- generates a cache file with the last modified time of the source files
+- Compiles the source files with the specified flags and outputs to the specified directory
+- Displays a success message when the compilation is complete
+- 
 
 
-
-## twan_build help
+## tmake help
 - Displays the help message with the list of available commands and their descriptions.
 
-## twan_build version
-- Displays the current version of the `twan_build` tool.
+## tmake version
+- Displays the current version of the `tmake` tool.
 
-## twan_build 
+## tmake 
 - Displays the help message with the list of available commands and their descriptions.

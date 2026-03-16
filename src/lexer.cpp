@@ -189,6 +189,6 @@ void Lexer::lex(){
     
 }
     
-const std::vector<Token>& Lexer::get_tokens() const {
+std::vector<Token>& Lexer::get_tokens() {
     return tokens;
 }

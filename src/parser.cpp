@@ -1,7 +1,7 @@
 #include "parser.hpp"
 
-Parser::Parser(const std::vector<Token>& tokens)
-    : m_tokens(tokens), m_pos(0) {}
+Parser::Parser(std::vector<Token>& tokens)
+    : m_pos(0),m_tokens(tokens) {}
 
 Token Parser::peek(u64 offset) const {
     if (m_pos + offset < m_tokens.size()) {
@@ -51,7 +51,12 @@ Ast_index Parser::parse_statement() {
             break;
         case Token_type::LBrace:
             // Distinguish array literal { val, val } from code block { stmt stmt }
-            if (peek(1).type == Token_type::RBrace || peek(2).type == Token_type::Comma) {
+            // Arrays contain string literals or identifiers separated by commas
+            // Blocks contain statements like function calls, if statements, etc.
+            if (peek(1).type == Token_type::RBrace                          // empty: { }
+                || peek(2).type == Token_type::Comma                        // multi-element: { val, ...
+                || (peek(1).type == Token_type::String_literal && peek(2).type == Token_type::RBrace)   // single string: { "..." }
+                || (peek(1).type == Token_type::Identifier && peek(2).type == Token_type::RBrace)) {    // single ident: { name }
                 return parse_array_literal();
             }
             return parse_block();

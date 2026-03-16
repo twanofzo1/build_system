@@ -14,7 +14,7 @@ enum class Ast_statement_type {
     Invalid,
 };
 
-inline std::string stmtTypeToString(Ast_statement_type type) {
+inline std::string stmt_type_to_string(Ast_statement_type type) {
     switch (type) {
         case Ast_statement_type::Variable_declaration: return "Variable declaration";
         case Ast_statement_type::If: return "If";
@@ -118,7 +118,7 @@ class Parser
 {
 private:
     u64 m_pos;
-    const std::vector<Token>& m_tokens;
+    std::vector<Token>& m_tokens;
     Ast m_ast;
     Token m_current_token;
 
@@ -135,7 +135,7 @@ private:
     Ast_index parse_identifier_reference();
     Ast_index parse_statement();
 public:
-    Parser(const std::vector<Token>& tokens);
+    Parser(std::vector<Token>& tokens);
     const Ast& parse();
 };
 
