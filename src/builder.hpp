@@ -9,6 +9,8 @@ struct Build_target
     std::string output_directory;
     std::vector<std::string> files;
     std::vector<std::string> flags;
+    std::vector<std::string> links;
+    std::vector<std::string> dynamic_links;
 };
 
 struct Cache_entry
@@ -22,12 +24,13 @@ struct Cache_entry
 class Builder
 {
 private:
-    std::string config_path;
-    std::string cache_path;
-    std::string compiler;
-    std::string version;
-    std::vector<Build_target> targets;
-    std::unordered_map<std::string, Cache_entry> cache;
+    std::string m_config_path;
+    std::string m_cache_path;
+    std::string m_compiler;
+    std::string m_version;
+    std::string m_language;
+    std::vector<Build_target> m_targets;
+    std::unordered_map<std::string, Cache_entry> m_cache;
 
     bool parse_config();
     void load_cache();

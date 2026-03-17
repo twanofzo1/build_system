@@ -167,26 +167,13 @@ void Executor::execute_variable_declaration(const Ast_index& stmt) {
 }
 
 
-void Executor::execute_print(const Ast_index& stmt) {
-    Ast_print_statement print_stmt = ast.print_statements[stmt.index];
-    if (print_stmt.value.type == Ast_statement_type::String_literal) {
-        std::cout << "Tmake: " << resolve_string(print_stmt.value) << std::endl;
-    } else if (print_stmt.value.type == Ast_statement_type::Identifier_reference) {
-        std::vector<std::string> values = resolve_value(print_stmt.value);
-        for (const auto& val : values) {
-            std::cout << "Tmake: " << val << std::endl;
-        }
-    }
-}
-
-
 void Executor::execute_if(const Ast_index& stmt) {
     Ast_if_statement if_stmt = ast.if_statements[stmt.index];
     if (evaluate_condition(if_stmt.condition)) {
         execute_stmt(if_stmt.true_block);
-    } else if (if_stmt.false_block.type == Ast_statement_type::If) {
+    } else if (if_stmt.false_block.type == Ast_statement_type::If) { // else if
         execute_if(if_stmt.false_block);
-    } else if (if_stmt.false_block.type != Ast_statement_type::Invalid) {
+    } else {
         execute_stmt(if_stmt.false_block);
     }
 }
@@ -196,7 +183,7 @@ void Executor::handle_compiler(const Ast_function_call& func_call) {
     if (!func_call.arguments.empty()) {
         std::vector<std::string> values = resolve_value(func_call.arguments[0]);
         if (!values.empty()) {
-            compiler = values[0];
+            m_compiler = values[0];
         }
     }
 }
@@ -206,15 +193,46 @@ void Executor::handle_version(const Ast_function_call& func_call) {
     if (!func_call.arguments.empty()) {
         std::vector<std::string> values = resolve_value(func_call.arguments[0]);
         if (!values.empty()) {
-            version = values[0];
+            m_version = values[0];
         }
+    }
+}
+
+void Executor::handle_language(const Ast_function_call& func_call) {
+    if (!func_call.arguments.empty()) {
+        std::vector<std::string> values = resolve_value(func_call.arguments[0]);
+        if (!values.empty()) {
+            std::string lang = values[0];
+            if (lang == "c++" || lang == "cpp" || lang == "C++") {
+                m_language = "c++";
+            } else if (lang == "c" || lang == "C") {
+                m_language = "c";
+            } else {
+                std::cerr << "Warning: Unknown language '" << lang << "', defaulting to c++" << std::endl;
+                m_language = "c++";
+            }
+        }
+    }
+}
+
+void Executor::handle_print(const Ast_function_call& func_call) {
+    if (!func_call.arguments.empty()) {
+        std::vector<std::string> values = resolve_value(func_call.arguments[0]);
+        for (const auto& val : values) {
+            std::cout << "Tmake: " << val << std::endl;
+        }
+    } else {
+        std::cerr << "Error: PRINT function requires at least one argument" << std::endl;
     }
 }
 
 
 void Executor::handle_program(const Ast_function_call& func_call) {
     Build_config prog;
-
+    if (func_call.arguments.size() < 1) {
+        std::cerr << "Error: PROGRAM function requires at least one argument" << std::endl;
+        return;
+    }
     if (func_call.arguments.size() >= 1) {
         std::vector<std::string> name = resolve_value(func_call.arguments[0]);
         if (!name.empty()) {
@@ -233,9 +251,21 @@ void Executor::handle_program(const Ast_function_call& func_call) {
             prog.output_directory = dir[0];
         }
     }
+    if (func_call.arguments.size() >= 5) {
+        for (const auto& link : resolve_value(func_call.arguments[4])) {
+            if (!link.empty()) {
+                if (link.find(".dll") != std::string::npos || link.find(".so") != std::string::npos) {
+                    prog.dynamic_links.push_back(link);
+                } else {
+                    prog.links.push_back(link);
+                }
+            }
+        }
+    }
 
-    programs.push_back(prog);
+    m_programs.push_back(prog);
 }
+
 
 
 void Executor::execute_function_call(const Ast_index& stmt) {
@@ -245,6 +275,8 @@ void Executor::execute_function_call(const Ast_index& stmt) {
         handle_compiler(func_call);
     } else if (func_call.function_name == "VERSION") {
         handle_version(func_call);
+    } else if (func_call.function_name == "LANGUAGE") {
+        handle_language(func_call);
     } else if (func_call.function_name == "PROGRAM") {
         handle_program(func_call);
     } else {
@@ -265,9 +297,6 @@ void Executor::execute_stmt(const Ast_index& stmt_index) {
     switch (stmt_index.type) {
         case Ast_statement_type::Variable_declaration:
             execute_variable_declaration(stmt_index);
-            break;
-        case Ast_statement_type::Print:
-            execute_print(stmt_index);
             break;
         case Ast_statement_type::If:
             execute_if(stmt_index);
@@ -290,13 +319,14 @@ void Executor::write_config_file() {
         return;
     }
 
-    file << "compiler=" << compiler << "\n";
-    file << "version=" << version << "\n";
-    file << "program_count=" << programs.size() << "\n";
+    file << "compiler=" << m_compiler << "\n";
+    file << "version=" << m_version << "\n";
+    file << "language=" << m_language << "\n";
+    file << "program_count=" << m_programs.size() << "\n";
     file << "\n";
 
-    for (size_t p = 0; p < programs.size(); ++p) {
-        const Build_config& prog = programs[p];
+    for (size_t p = 0; p < m_programs.size(); ++p) {
+        const Build_config& prog = m_programs[p];
         file << "[program]\n";
         file << "name=" << prog.program_name << "\n";
         file << "output_directory=" << prog.output_directory << "\n";
@@ -314,11 +344,26 @@ void Executor::write_config_file() {
             if (i < prog.flags.size() - 1) file << ";";
         }
         file << "\n";
+
+        file << "links=";
+        for (size_t i = 0; i < prog.links.size(); ++i) {
+            file << prog.links[i];
+            if (i < prog.links.size() - 1) file << ";";
+        }
+
+        file << "\n";
+
+        file << "dynamic_links=";
+        for (size_t i = 0; i < prog.dynamic_links.size(); ++i) {
+            file << prog.dynamic_links[i];
+            if (i < prog.dynamic_links.size() - 1) file << ";";
+        }
+
         file << "\n";
     }
 
     file.close();
-    std::cout << "Configuration written to build/tmake.config (" << programs.size() << " program(s))" << std::endl;
+    std::cout << "Configuration written to build/tmake.config (" << m_programs.size() << " program(s))" << std::endl;
 }
 
 
@@ -326,7 +371,7 @@ void Executor::execute() {
     for (const auto& stmt : ast.statements) {
         execute_stmt(stmt);
     }
-    if (!programs.empty()) {
+    if (!m_programs.empty()) {
         write_config_file();
     }
 }

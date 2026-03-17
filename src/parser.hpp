@@ -101,7 +101,6 @@ struct Ast_identifier_reference
 struct Ast{
     std::vector<Ast_variable_declaration> variable_declarations;
     std::vector<Ast_if_statement> if_statements;
-    std::vector<Ast_print_statement> print_statements;
     std::vector<Ast_string_literal> string_literals;
     std::vector<Ast_block> blocks;
     std::vector<Ast_index> statements;

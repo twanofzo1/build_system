@@ -8,6 +8,8 @@ to build tmake, run the following command in the root directory of the project:
 ```bash
 ./build.sh
 ```
+
+
 # Usage
 
 ## tmake config <...>
@@ -17,8 +19,13 @@ to parse the build configuration file and generate the build files.
 ## tmake build
 to build the project using the generated build files.
 
+## tmake init
+to initialize a new tmake project in the current directory, this will create a default `tmake.txt` file and a `build` and `src` directory for the source files.
+
 ## tmake clean
 to clean the build files and the generated binaries.
+
+
 
 # Editor Extension
 tmake has a VS Code extension that provides syntax highlighting and autocomplete for `.tmake` files.

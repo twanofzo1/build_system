@@ -12,12 +12,13 @@
 
 const std::unordered_map<std::string, Token_type> keywords = {
     {"var", Token_type::Var},
-    {"if", Token_type::If}, 
-    {"else", Token_type::Else}, 
+    {"if", Token_type::If},
+    {"else", Token_type::Else},
     {"PRINT", Token_type::Print},
     {"PROGRAM", Token_type::Program},
     {"VERSION", Token_type::Version},
     {"COMPILER", Token_type::Compiler},
+    {"LANGUAGE", Token_type::Language},
 };
 
 

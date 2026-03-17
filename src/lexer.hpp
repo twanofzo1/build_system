@@ -31,7 +31,8 @@ enum class Token_type {
     Version,
     Compiler,
     String_literal,
-    Print
+    Print,
+    Language
 };
 
 inline std::string token_type_to_string(Token_type type) {
@@ -58,6 +59,7 @@ inline std::string token_type_to_string(Token_type type) {
         case Token_type::Compiler: return "Compiler";
         case Token_type::String_literal: return "String literal";
         case Token_type::Print: return "Print";
+        case Token_type::Language: return "Language";
         default: return "Unknown";
     }
 }

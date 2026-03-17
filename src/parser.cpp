@@ -41,26 +41,28 @@ Ast_index Parser::parse_statement() {
 
         case Token_type::If:
             return parse_if_statement();
+        case Token_type::LBracket:
+            return parse_array_literal();
+        case Token_type::LBrace:
+            return parse_block();
+
         case Token_type::Print:
-            return parse_print_statement();
+        case Token_type::Compiler:
+        case Token_type::Program:
+        case Token_type::Version:
+        case Token_type::Language:
+            return parse_function_call();
+        default:
+            std::cerr << "Error: Unexpected token " << current.value << std::endl;
+            m_pos++; // Skip the unexpected token to avoid infinite loop
+            return {Ast_statement_type::Invalid, 0};
+
         case Token_type::String_literal:
             result = parse_string_literal();
             break;
         case Token_type::Identifier:
             result = parse_identifier_reference();
             break;
-        case Token_type::LBracket:
-            return parse_array_literal();
-        case Token_type::LBrace:
-            return parse_block();
-        case Token_type::Compiler:
-        case Token_type::Program:
-        case Token_type::Version:
-            return parse_function_call();
-        default:
-            std::cerr << "Error: Unexpected token " << current.value << std::endl;
-            m_pos++; // Skip the unexpected token to avoid infinite loop
-            return {Ast_statement_type::Invalid, 0};
     }
 
     // After value-like expressions, check for binary comparison operators
@@ -117,20 +119,6 @@ Ast_index Parser::parse_if_statement() {
 
     m_ast.if_statements.push_back(if_stmt);
     return {Ast_statement_type::If, static_cast<u32>(m_ast.if_statements.size() - 1)};
-}
-
-
-Ast_index Parser::parse_print_statement() {
-    consume(Token_type::Print);
-    consume(Token_type::LParen);
-    Ast_index value_index = parse_statement();
-    consume(Token_type::RParen);
-
-    Ast_print_statement print_stmt;
-    print_stmt.value = value_index;
-
-    m_ast.print_statements.push_back(print_stmt);
-    return {Ast_statement_type::Print, static_cast<u32>(m_ast.print_statements.size() - 1)};
 }
 
 
@@ -282,10 +270,6 @@ void Ast::print() const {
     }
     for (const auto& if_stmt : if_statements) {
         if_stmt.print();
-        std::cout << std::endl;
-    }
-    for (const auto& print_stmt : print_statements) {
-        print_stmt.print();
         std::cout << std::endl;
     }
     for (const auto& str_lit : string_literals) {

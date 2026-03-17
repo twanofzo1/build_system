@@ -9,7 +9,7 @@
 namespace fs = std::filesystem;
 
 Builder::Builder(const std::string& config_path, const std::string& cache_path)
-    : config_path(config_path), cache_path(cache_path) {}
+    : m_config_path(config_path), m_cache_path(cache_path), m_language("c++") {}
 
 
 std::vector<std::string> Builder::split(const std::string& str, char delimiter) {
@@ -43,9 +43,9 @@ long long Builder::get_mtime(const std::string& path) {
 
 
 bool Builder::parse_config() {
-    std::ifstream file(config_path);
+    std::ifstream file(m_config_path);
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open " << config_path << std::endl;
+        std::cerr << "Error: Could not open " << m_config_path << std::endl;
         std::cerr << "Run 'tmake config' first to generate the config file." << std::endl;
         return false;
     }
@@ -57,8 +57,8 @@ bool Builder::parse_config() {
         if (line.empty()) continue;
 
         if (line == "[program]") {
-            targets.emplace_back();
-            current_target = &targets.back();
+            m_targets.emplace_back();
+            current_target = &m_targets.back();
             continue;
         }
 
@@ -69,9 +69,11 @@ bool Builder::parse_config() {
         std::string value = line.substr(eq + 1);
 
         if (key == "compiler") {
-            compiler = value;
+            m_compiler = value;
         } else if (key == "version") {
-            version = value;
+            m_version = value;
+        } else if (key == "language") {
+            m_language = value;
         } else if (key == "program_count") {
             // informational
         } else if (current_target != nullptr) {
@@ -83,6 +85,10 @@ bool Builder::parse_config() {
                 current_target->files = split(value, ';');
             } else if (key == "flags") {
                 current_target->flags = split(value, ';');
+            } else if (key == "links") {
+                current_target->links = split(value, ';');
+            } else if (key == "dynamic_links") {
+                current_target->dynamic_links = split(value, ';');
             }
         }
     }
@@ -99,7 +105,7 @@ bool Builder::parse_config() {
 // deps=header1.hpp;header2.hpp
 // dep_mtimes=123456789;123456789
 void Builder::load_cache() {
-    std::ifstream file(cache_path);
+    std::ifstream file(m_cache_path);
     if (!file.is_open()) return;
 
     std::string line;
@@ -121,9 +127,9 @@ void Builder::load_cache() {
         std::string value = line.substr(eq + 1);
 
         if (key == "source") {
-            cache[value] = Cache_entry{};
-            cache[value].source_file = value;
-            current = &cache[value];
+            m_cache[value] = Cache_entry{};
+            m_cache[value].source_file = value;
+            current = &m_cache[value];
         } else if (current != nullptr) {
             if (key == "mtime") {
                 current->last_modified = std::stoll(value);
@@ -143,14 +149,14 @@ void Builder::load_cache() {
 
 
 void Builder::save_cache() {
-    fs::create_directories(fs::path(cache_path).parent_path());
-    std::ofstream file(cache_path);
+    fs::create_directories(fs::path(m_cache_path).parent_path());
+    std::ofstream file(m_cache_path);
     if (!file.is_open()) {
-        std::cerr << "Warning: Could not write cache file " << cache_path << std::endl;
+        std::cerr << "Warning: Could not write cache file " << m_cache_path << std::endl;
         return;
     }
 
-    for (const auto& [source, entry] : cache) {
+    for (const auto& [source, entry] : m_cache) {
         file << "[file]\n";
         file << "source=" << entry.source_file << "\n";
         file << "mtime=" << entry.last_modified << "\n";
@@ -176,7 +182,14 @@ void Builder::save_cache() {
 
 std::vector<std::string> Builder::get_dependencies(const std::string& source, const Build_target& target) {
     // Use compiler -MM to get header dependencies
-    std::string cmd = compiler + " -std=c++" + version;
+    std::string std_flag;
+    if (m_language == "c") {
+        std_flag = " -std=c" + m_version;
+    } else {
+        std_flag = " -std=c++" + m_version;
+    }
+
+    std::string cmd = m_compiler + std_flag;
     for (const auto& flag : target.flags) {
         cmd += " " + flag;
     }
@@ -227,8 +240,8 @@ std::vector<std::string> Builder::get_dependencies(const std::string& source, co
 
 
 bool Builder::needs_rebuild(const std::string& source, const std::vector<std::string>& deps) {
-    auto it = cache.find(source);
-    if (it == cache.end()) {
+    auto it = m_cache.find(source);
+    if (it == m_cache.end()) {
         return true; // not in cache, needs build
     }
 
@@ -286,8 +299,15 @@ bool Builder::compile_file(const std::string& source, const std::string& object,
     // Create object directory
     fs::create_directories(fs::path(object).parent_path());
 
-    // compiler -std=c++VERSION flags... -c source -o object
-    std::string cmd = compiler + " -std=c++" + version;
+    // compiler -std=VERSION flags... -c source -o object
+    std::string std_flag;
+    if (m_language == "c") {
+        std_flag = " -std=c" + m_version;
+    } else {
+        std_flag = " -std=c++" + m_version;
+    }
+
+    std::string cmd = m_compiler + std_flag;
     for (const auto& flag : target.flags) {
         cmd += " " + flag;
     }
@@ -321,13 +341,89 @@ bool Builder::link_target(const std::vector<std::string>& objects, const Build_t
     }
 
     // compiler flags... objects... -o output
-    std::string cmd = compiler + " -std=c++" + version;
+    std::string std_flag;
+    if (m_language == "c") {
+        std_flag = " -std=c" + m_version;
+    } else {
+        std_flag = " -std=c++" + m_version;
+    }
+
+    std::string cmd = m_compiler + std_flag;
+
     for (const auto& flag : target.flags) {
         cmd += " " + flag;
     }
     for (const auto& obj : objects) {
         cmd += " " + obj;
     }
+
+    for (const auto& link : target.links) {
+        if (link.empty()) continue;
+
+        // check if it's a full path or just a library name
+        if (link.find('/') != std::string::npos || link.find('\\') != std::string::npos) {
+            // full path - pass directly
+            cmd += " " + link;
+        } else if (link.size() > 2 && link.substr(link.size() - 2) == ".a") {
+            // .a file without path - pass directly
+            cmd += " " + link;
+        } else if (link.size() > 4 && link.substr(link.size() - 4) == ".lib") {
+            // .lib file (windows) - pass directly
+            cmd += " " + link;
+        } else if (link[0] == '-') {
+            // already a linker flag (e.g., -lpthread)
+            cmd += " " + link;
+        } else {
+            // assume it's a library name - use -l
+            cmd += " -l" + link;
+        }
+    }
+
+    // Handle dynamic libraries (.so on Linux, .dll on Windows)
+    for (const auto& dylink : target.dynamic_links) {
+        if (dylink.empty()) continue;
+
+        // Extract directory and library name
+        std::string dir;
+        std::string libname = dylink;
+
+        size_t last_slash = dylink.rfind('/');
+        if (last_slash == std::string::npos) {
+            last_slash = dylink.rfind('\\');
+        }
+
+        if (last_slash != std::string::npos) {
+            dir = dylink.substr(0, last_slash);
+            libname = dylink.substr(last_slash + 1);
+        }
+
+        // Add library path if specified
+        if (!dir.empty()) {
+            cmd += " -L" + dir;
+        }
+
+        // Strip lib prefix and extension to get the link name
+        std::string link_name = libname;
+
+        // Remove lib prefix if present
+        if (link_name.size() > 3 && link_name.substr(0, 3) == "lib") {
+            link_name = link_name.substr(3);
+        }
+
+        // Remove extensions
+        size_t ext_pos = link_name.find(".so");
+        if (ext_pos != std::string::npos) {
+            link_name = link_name.substr(0, ext_pos);
+        } else {
+            ext_pos = link_name.find(".dll");
+            if (ext_pos != std::string::npos) {
+                link_name = link_name.substr(0, ext_pos);
+            }
+        }
+
+        cmd += " -l" + link_name;
+    }
+
     cmd += " -o " + output_path;
 
     std::cout << "  LINK " << output_path << std::endl;
@@ -388,7 +484,7 @@ bool Builder::build_target(const Build_target& target) {
         for (const auto& dep : deps) {
             entry.dep_modified.push_back(get_mtime(dep));
         }
-        cache[source] = entry;
+        m_cache[source] = entry;
     }
 
     if (compiled == 0 && skipped == (int)target.files.size()) {
@@ -426,18 +522,19 @@ bool Builder::build() {
         return false;
     }
 
-    if (targets.empty()) {
+    if (m_targets.empty()) {
         std::cerr << "Error: No programs defined in config." << std::endl;
         return false;
     }
 
     load_cache();
 
-    std::cout << "Building " << targets.size() << " target(s) with " << compiler << " (C++" << version << ")" << std::endl;
+    std::string lang_display = (m_language == "c") ? "C" : "C++";
+    std::cout << "Building " << m_targets.size() << " target(s) with " << m_compiler << " (" << lang_display << m_version << ")" << std::endl;
     std::cout << std::endl;
 
     bool all_ok = true;
-    for (const auto& target : targets) {
+    for (const auto& target : m_targets) {
         if (!build_target(target)) {
             all_ok = false;
         }
@@ -447,7 +544,7 @@ bool Builder::build() {
     save_cache();
 
     if (all_ok) {
-        std::cout << "Build complete: " << targets.size() << "/" << targets.size() << " succeeded." << std::endl;
+        std::cout << "Build complete: " << m_targets.size() << "/" << m_targets.size() << " succeeded." << std::endl;
     } else {
         std::cerr << "Build finished with errors." << std::endl;
     }

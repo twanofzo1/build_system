@@ -11,15 +11,31 @@ var release_flags = [
     "-DNDEBUG"
 ]
 
+var links = [
+    "pthread"
+]
+
 var program_name = "tmake"
 var output_directory = "./bin"
 
 COMPILER("g++")
 VERSION("17")
-
+LANGUAGE("c++")
 
 if "$1" == "release" {
-    PROGRAM(program_name, files, release_flags, output_directory)
+    PROGRAM(
+        program_name,
+        files,
+        release_flags,
+        output_directory,
+        links
+    )
 } else {
-    PROGRAM(program_name, files, debug_flags, output_directory)
+    PROGRAM(
+        program_name,
+        files,
+        debug_flags,
+        output_directory,
+        links
+    )
 }
