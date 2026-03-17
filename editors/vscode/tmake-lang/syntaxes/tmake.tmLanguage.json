@@ -47,7 +47,7 @@
       "patterns": [
         {
           "name": "entity.name.function.builtin.tmake",
-          "match": "\\b(COMPILER|VERSION|PROGRAM|PRINT)\\b"
+          "match": "\\b(COMPILER|VERSION|PROGRAM|PRINT|LANGUAGE)\\b"
         }
       ]
     },

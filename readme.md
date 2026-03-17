@@ -66,8 +66,9 @@ PRINT("Hello, World!")
 // files:        an array or string of source files to compile
 // flags:        an array of string compiler flags to use when building the program
 // output_dir:   a string representing the directory where the built program should be placed
-// PROGRAM(program_name, files, flags, output_dir)
-PROGRAM("my_program")
+// libraries:    an array of string representing the libraries to link against when building the program, this argument is optional
+// PROGRAM(program_name, files, flags, output_dir, libraries)
+PROGRAM("my_program", ["main.cpp", "utils.cpp"], ["-Wall", "-O2"], "bin", ["library1.dll", "library2.a"])
 
 // VERSION is a built-in function that sets the version of c++ used to build the program, it can be excluded, in which case the default version will be used (currently c++17)
 // arguments:
@@ -78,6 +79,13 @@ VERSION("17")
 // arguments:
 // compiler: a string representing the compiler to use when building the program
 COMPILER("g++")
+
+
+// LANGUAGE is a built-in function that sets the programming language to be used when building the program, it can be excluded, in which case the default language will be used (default c++)
+// arguments: 
+// language: a string representing the programming language to use when building the program, such as "c" for C, "cpp" for C++, etc.
+LANGUAGE("c") 
+
 
 
 // string interpolation 

@@ -12,7 +12,7 @@ var release_flags = [
 ]
 
 var links = [
-    "pthread"
+    ""
 ]
 
 var program_name = "tmake"
