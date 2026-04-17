@@ -42,7 +42,7 @@ this will install dependencies, compile the extension, and symlink it into your 
 # tmake lang
 tmake is the scripting language used to configure the build process in tmake.
 it has a simple syntax and supports variables, function calls and conditional statements.
-the build configuration file is written in tmake and is usually named `tmake.txt`.
+the build configuration file is written in tmake and is usually named `tmake.tmake`.
 
 ```js
 // comment
