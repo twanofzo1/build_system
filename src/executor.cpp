@@ -279,6 +279,8 @@ void Executor::execute_function_call(const Ast_index& stmt) {
         handle_language(func_call);
     } else if (func_call.function_name == "PROGRAM") {
         handle_program(func_call);
+    } else if (func_call.function_name == "PRINT") {
+        handle_print(func_call);
     } else {
         std::cerr << "Error: Unknown function '" << func_call.function_name << "'" << std::endl;
     }

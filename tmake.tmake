@@ -24,7 +24,7 @@ LANGUAGE("c++")
 
 if "$1" == "release" {
     PROGRAM(
-        program_name,
+        program_name +,
         files,
         release_flags,
         output_directory,

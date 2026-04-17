@@ -90,6 +90,10 @@ void Lexer::parse_string_literal() {
 
 void Lexer::parse_identifier_or_keyword() {
     std::string identifier;
+    if (!(isalpha(m_current_char) || m_current_char == '_')) {
+        std::cerr << "Error: Unexpected character '" << m_current_char << "'" << std::endl;
+        exit(1);
+    }
     while (m_pos < m_input.size() && (isalnum(m_input[m_pos]) || m_input[m_pos] == '_')) {
         identifier += m_input[m_pos];
         advance();
@@ -191,7 +195,12 @@ void Lexer::lex(){
             continue;
         
         default:
-            parse_identifier_or_keyword();
+            if (isalpha(m_current_char) || m_current_char == '_') {
+                parse_identifier_or_keyword();
+            } else {
+                std::cerr << "Error: Unexpected character '" << m_current_char << "'" << std::endl;
+                exit(1);
+            }
             continue;
 
         case '\0':
