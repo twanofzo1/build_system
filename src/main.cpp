@@ -14,6 +14,8 @@
 #include "executor.hpp"
 #include "builder.hpp"
 
+#include "include.h"
+
 const std::string user_config_file = "tmake.tmake";
 const std::string system_config_file = "build/tmake.config";
 const std::string cache_file = "build/tmake.cache";
@@ -78,7 +80,7 @@ static int run_init() {
     config_file<<"\n";
     config_file<<"PROGRAM is a function that compiles the source files with the specified flags and outputs to the specified directory\n";
     config_file<<"PROGRAM can be used multiple times to create multiple programs with different configurations\n";
-    config_file<<"PROGRAM(program_name, files, flags, output_dir) \n";
+    config_file<<"PROGRAM(program_name, files, flags, output_dir, links, include_directories) \n";
     config_file<<"\n";
     config_file<<"COMPILER is a function that sets the compiler to be used can be excluded, default is g++\n";
     config_file<<"COMPILER(compiler) \n";
@@ -123,6 +125,9 @@ static int run_init() {
     config_file<<"var links = [\n";
     config_file<<"    \"\"\n";
     config_file<<"]\n";
+    config_file<<"var include_directories = [\n";
+    config_file<<"    \"src\"\n";
+    config_file<<"]\n";
     config_file<<"\n";
     config_file<<"// Set the compiler to be used\n";
     config_file<<"var compiler = \"g++\"\n";
@@ -133,11 +138,11 @@ static int run_init() {
     config_file<<"\n";
     config_file<<"// tmake config debug->\n";
     config_file<<"if \"$1\" == \"debug\" {\n";
-    config_file<<"    PROGRAM(program_name, files, debug_flags, output_directory, links)\n";
+    config_file<<"    PROGRAM(program_name, files, debug_flags, output_directory, links, include_directories)\n";
     config_file<<"}\n";
     config_file<<"// tmake config release->\n";
     config_file<<"else if \"$1\" == \"release\" {\n";
-    config_file<<"    PROGRAM(program_name, files, release_flags, output_directory, links)\n";
+    config_file<<"    PROGRAM(program_name, files, release_flags, output_directory, links, include_directories)\n";
     config_file<<"}\n";
     config_file<<"// tmake config ... ->\n";
     config_file<<"else {\n";
@@ -184,4 +189,5 @@ int main(int argc, char** argv) {
         print_usage();
         return 1;
     }
+
 }

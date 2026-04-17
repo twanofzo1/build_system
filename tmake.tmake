@@ -15,6 +15,11 @@ var links = [
     ""
 ]
 
+var include_directories = [
+    "src"
+    "test"
+]
+
 var program_name = "tmake"
 var output_directory = "./bin"
 
@@ -24,11 +29,12 @@ LANGUAGE("c++")
 
 if "$1" == "release" {
     PROGRAM(
-        program_name +,
+        program_name,
         files,
         release_flags,
         output_directory,
-        links
+        links,
+        include_directories
     )
 } else {
     PROGRAM(
@@ -36,6 +42,7 @@ if "$1" == "release" {
         files,
         debug_flags,
         output_directory,
-        links
+        links,
+        include_directories
     )
 }

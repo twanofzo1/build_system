@@ -85,6 +85,8 @@ bool Builder::parse_config() {
                 current_target->files = split(value, ';');
             } else if (key == "flags") {
                 current_target->flags = split(value, ';');
+            } else if (key == "include_directories") {
+                current_target->include_directories = split(value, ';');
             } else if (key == "links") {
                 current_target->links = split(value, ';');
             } else if (key == "dynamic_links") {
@@ -192,6 +194,11 @@ std::vector<std::string> Builder::get_dependencies(const std::string& source, co
     std::string cmd = m_compiler + std_flag;
     for (const auto& flag : target.flags) {
         cmd += " " + flag;
+    }
+    for (const auto& include_dir : target.include_directories) {
+        if (!include_dir.empty()) {
+            cmd += " -I" + include_dir;
+        }
     }
     cmd += " -MM " + source + " 2>/dev/null";
 
@@ -310,6 +317,11 @@ bool Builder::compile_file(const std::string& source, const std::string& object,
     std::string cmd = m_compiler + std_flag;
     for (const auto& flag : target.flags) {
         cmd += " " + flag;
+    }
+    for (const auto& include_dir : target.include_directories) {
+        if (!include_dir.empty()) {
+            cmd += " -I" + include_dir;
+        }
     }
     cmd += " -c " + source + " -o " + object;
 

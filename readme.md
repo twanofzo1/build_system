@@ -67,8 +67,9 @@ PRINT("Hello, World!")
 // flags:        an array of string compiler flags to use when building the program
 // output_dir:   a string representing the directory where the built program should be placed
 // libraries:    an array of string representing the libraries to link against when building the program, this argument is optional
-// PROGRAM(program_name, files, flags, output_dir, libraries)
-PROGRAM("my_program", ["main.cpp", "utils.cpp"], ["-Wall", "-O2"], "bin", ["library1.dll", "library2.a"])
+// include_dirs: an array of directories to search for headers (passed as -I...)
+// PROGRAM(program_name, files, flags, output_dir, libraries, include_dirs)
+PROGRAM("my_program", ["main.cpp", "utils.cpp"], ["-Wall", "-O2"], "bin", ["library1.dll", "library2.a"], ["include", "third_party/somelib/include"])
 
 // VERSION is a built-in function that sets the version of c++ used to build the program, it can be excluded, in which case the default version will be used (currently c++17)
 // arguments:

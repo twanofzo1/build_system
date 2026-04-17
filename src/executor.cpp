@@ -262,6 +262,9 @@ void Executor::handle_program(const Ast_function_call& func_call) {
             }
         }
     }
+    if (func_call.arguments.size() >= 6) {
+        prog.include_directories = resolve_value(func_call.arguments[5]);
+    }
 
     m_programs.push_back(prog);
 }
@@ -344,6 +347,13 @@ void Executor::write_config_file() {
         for (size_t i = 0; i < prog.flags.size(); ++i) {
             file << prog.flags[i];
             if (i < prog.flags.size() - 1) file << ";";
+        }
+        file << "\n";
+
+        file << "include_directories=";
+        for (size_t i = 0; i < prog.include_directories.size(); ++i) {
+            file << prog.include_directories[i];
+            if (i < prog.include_directories.size() - 1) file << ";";
         }
         file << "\n";
 

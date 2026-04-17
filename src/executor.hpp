@@ -11,6 +11,7 @@ struct Build_config
     std::vector<std::string> files;
     std::vector<std::string> flags;
     std::vector<std::string> links;
+    std::vector<std::string> include_directories;
     std::vector<std::string> dynamic_links;
 };
 
